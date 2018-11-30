@@ -13,7 +13,7 @@ class Mutex extends Event {
     }else{
       return new Promise(
         resolve =>{
-          this.on(event, resolve);
+          this.once(event, resolve);
         }
       );
     }
