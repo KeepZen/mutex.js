@@ -1,3 +1,8 @@
+# What's New?
+In some scene, there is a hard work need to do between `mutex.lock()` and
+`mutex.unlock()`, so lot of `mutxt.lock()` be called, and this may cause
+memory exhaustion. I have fixed this bug.
+
 # The origin
 We are told: JS is a single process single thread program frame, so in program
 with JS we do not need the mutex. But it is not true.
@@ -37,9 +42,6 @@ index:2
 ....
 ```
 We need mutex.
-# Install
-+ npm `npm install @keepzen/mutex.js`
-+ yarn `yarn add @keepzen/mutex.js`
 
 # API
 Let's just look at the code:
