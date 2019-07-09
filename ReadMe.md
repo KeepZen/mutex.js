@@ -35,7 +35,7 @@ for(let i=0;i<1000;++i){
 ```
 If we want the console output like that:
 
-```
+```txt
 index:0
 index:1
 index:2

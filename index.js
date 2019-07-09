@@ -1,41 +1,41 @@
 const Event = require('events');
 
-function lockMutex(m,event,resolve){
-  if(m._events.length < 10){
-    m._events.push( Symbol('lock') );
-    m.once(event,resolve);
-  }else{
-    //retry after 0.5 seconde
-    setTimeout(lockMutex.bind(null,m,event,resolve), 500);
+function lockMutex(m, waitToDone, resolve) {
+  if (m._events.length < 10) {
+    let newSignal = Symbol('lock');
+    m._events.push(newSignal);
+    m.once(waitToDone, resolve);
+  } else {
+    //retry after 0.05 seconde
+    setTimeout(lockMutex.bind(null, m, waitToDone, resolve), 50);
   }
 }
 
 class Mutex extends Event {
-  constructor(){
-      super();
-      const events = [];
-      this._events = events;
+  constructor() {
+    super();
+    this._signals = [];
   }
 
-  async lock(){
-    const event = this._events[0];
-    if(event == undefined){
+  async lock() {
+    const waitToDone = this._signals[0];
+    if (waitToDone == undefined) {
       return;
-    }else{
+    } else {
       return new Promise(
         resolve => {
-          lockMutex(this,event,resolve);
+          lockMutex(this, waitToDone, resolve);
         }
       );
     }
   }
-  unlock(){
-    let event = this._events.shift();
-    if(event !== undefined ){
-      this.emit(event);
+  unlock() {
+    let doneSignal = this._signals.shift();
+    if (doneSignal !== undefined) {
+      this.emit(doneSignal);
     }
   }
 }
-module.exports={
+module.exports = {
   Mutex,
 };

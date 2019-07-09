@@ -1,12 +1,16 @@
 {
   "name": "@keepzen/mutex.js",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "mutext lock for JS",
   "main": "index.js",
   "scripts": {
     "test": "npx jest"
   },
-  "repository": "git@github.com:KeepZen/mutex.js.git",
+  "homepage": "https://github.com/KeepZen/mutex.js",
+  "keywords": [
+    "mutex",
+    "lock"
+  ],
   "author": "Keep Zen",
   "license": "MIT",
   "private": false,
