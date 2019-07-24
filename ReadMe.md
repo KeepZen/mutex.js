@@ -77,13 +77,13 @@ cosnt {
 }= require('@keepzen/mutex.js');
 
 //In featch you can use detecotr
-//@sync
+//@synconized
 function step(index,ms){
   setTimeout(()=>{
     console.log(`index:${index}`);
   },ms);
 }
-const syncStep = sync(step);
+const syncStep = synchronized(step);
 for(let i=0;i<1000;++i){
   let ms = Math.floor(Math.random()*1000);
   syncStep(i,ms);
