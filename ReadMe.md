@@ -47,8 +47,8 @@ We need mutex.
 Let's just look at the code:
 
 ```js
-cosnt Mutext = require('@keepzen/mutex.js');
-const m = new Mutext();
+cosnt {Mutex}= require('@keepzen/mutex.js');
+const m = new Mutex();
 
 //change step to `async`
 async function step(index,ms) {
@@ -69,3 +69,28 @@ for(let i=0;i<1000;++i){
   step(i,ms);
 }
 ```
+
+If you like the Java keyword `synchronized`, now you can use in JS like fellow:
+```js
+cosnt {
+  sync:synchronized
+}= require('@keepzen/mutex.js');
+
+//In featch you can use detecotr
+//@sync
+function step(index,ms){
+  setTimeout(()=>{
+    console.log(`index:${index}`);
+  },ms);
+}
+const syncStep = sync(step);
+for(let i=0;i<1000;++i){
+  let ms = Math.floor(Math.random()*1000);
+  syncStep(i,ms);
+}
+```
+
+
+# TIPS
+
+There is a bug in version **0.0.5** and older. Please update if you use that to last version.
