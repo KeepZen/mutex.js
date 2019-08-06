@@ -59,3 +59,12 @@ test('synchronized(fun)', async () => {
   await Promise.all(ps);
   expect(ret).toMatchObject([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
 })
+
+test('try_lock(mutex)', () => {
+  let mutex = new Mutex();
+  expect(mutex.try_lock()).toBe(true);
+  expect(mutex.try_lock()).toBe(false);
+  mutex.unlock();
+  expect(mutex.try_lock()).toBe(true);
+  mutex.unlock();
+})

@@ -4,11 +4,18 @@ class Mutex extends Event {
     super();
     this._waitUnLockMutexes = [];
   }
-  async lock() {
+  try_lock() {
     const noNeedWait = this._waitUnLockMutexes.length == 0;
     if (noNeedWait) {
       const mutex = Symbol();
       this._waitUnLockMutexes.push(mutex);
+      return true;
+    }
+    return false;
+  }
+  async lock() {
+    const isLocked = this.try_lock();
+    if (isLocked) {
       return;
     } else {
       const len = this._waitUnLockMutexes.length;
