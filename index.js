@@ -2,52 +2,48 @@ const Event = require('events');
 class Mutex extends Event {
   constructor() {
     super();
-    this._waitUnLockMutexes = [];
+    this._waitToUnlockMutex = null;
   }
   try_lock() {
-    const noNeedWait = this._waitUnLockMutexes.length == 0;
-    if (noNeedWait) {
-      const mutex = Symbol();
-      this._waitUnLockMutexes.push(mutex);
-      return true;
-    }
-    return false;
-  }
-  async lock() {
-    const isLocked = this.try_lock();
-    if (isLocked) {
-      return;
+    if (this._waitToUnlockMutex) {
+      return null;
     } else {
-      const len = this._waitUnLockMutexes.length;
-      const waitToUnLock = this._waitUnLockMutexes[len - 1];
-      if (len < 10) {
-        this._waitUnLockMutexes.push(Symbol());
-        return new Promise(resolve => {
-          this.once(waitToUnLock, resolve);
-        })
-      } else {
-        return new Promise(resolve => {
-          this.once(waitToUnLock, () => {
-            this._waitUnLockMutexes.push(Symbol());
-            resolve();
-          })
-        })
-      }
+      const mutex = Symbol();
+      this._waitToUnlockMutex = mutex;
+      return mutex;
     }
   }
-  unlock() {
-    const mutex = this._waitUnLockMutexes.shift();
-    this.emit(mutex);
+  unlock(mutex) {
+    if (mutex && mutex == this._waitToUnlockMutex) {
+      this._waitToUnlockMutex = null;
+    }
+    if (mutex != null) {
+      this.emit(mutex);
+    }
+  }
+
+  async lock() {
+    let mutex = this.try_lock();
+    if (mutex != null) {
+      return mutex;
+    } else {
+      let waitToUnlock, thisMutex = Symbol();
+      [waitToUnlock, this._waitToUnlockMutex] = [this._waitToUnlockMutex, thisMutex];
+      return new Promise(resolve => {
+        this.once(waitToUnlock, () => resolve(thisMutex));
+      });
+    }
   }
 }
+
 function synchronized(fun) {
   const locker = new Mutex();
   return async (...args) => {
-    await locker.lock();
+    const mu = await locker.lock();
     try {
       return await fun(...args);
     } finally {
-      locker.unlock();
+      locker.unlock(mu);
     }
   }
 }

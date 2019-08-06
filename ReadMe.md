@@ -1,3 +1,5 @@
+For Version 0.2.0
+
 # The origin
 We are told: JS is a single process single thread program frame, so programing
 with JS we do not need the mutex. But it is not true.
@@ -40,6 +42,11 @@ We need mutex.
 
 # API
 ## `mutex.lock()`
+
+`lock()` return a `Promsie<Symbol>`, the symbol is the `key` use in `unlock(key)`.
+
+Nobody can unlock if do not have the `key`.
+
 Let's just look at the code:
 
 ```js
@@ -48,11 +55,11 @@ const m = new Mutex();
 
 //change step to `async`
 async function step(index,ms) {
-  await m.lock();// first lock the mutext
+  const key=await m.lock();// first lock the mutext
   setTimeout(
     ()=>{
       console.log(`index:${index}`);
-      m.unlock();// when the work is done unlock the mutext
+      m.unlock(key);// when the work is done unlock the mutext
     },
     ms
   );
@@ -69,20 +76,26 @@ for(let i=0;i<1000;++i){
 ## `mutex.try_lock()`
 This is new after version 0.1.3.
 
+Return a symbol or null.
+
 For a locked `mutex`, if you lock it again, you code will blocked.
 Some time you just want have a try but if fail do not want be blocked,
-now you can use `mutext.try_lock()`. `try_lock` return a boolean,
-if it get the change return a `true`, and lock the mutex,
-so after you done your work, you shold to unlock the `mutex`.
-If it return `false` implicit the mutex have be locked by other,
-and you ***MUST* have *NOT*  to `unlock`**  the mutex,
-becasue it is not your bussiness.
+now you can use `mutext.try_lock()`.
+
+`try_lock` return a symbol as the key, if it can get, and lock the mutex. After you done your work, you shold to unlock the `mutex`, and give back the key, use `mutext.unlock(key)`.
+
+If `try_lock` return `null` implicit the mutex have be locked by other.
+
+If do not have the `key`, nobody can unlock the mutex, so from version 0.2.0 you do not need to care unintended `unlock`.
+
+## `unlock(key)`
+After you done your work, you must unlock the `mutex` with the `key` which get from the `lock` or `try_lock`.
 
 ## `sync()`
 
 This is new for version 0.1.x.
 
-If you like the Java keyword `synchronized`, now you can use in JS like fellow:
+`sync` is just like Java keyword `synchronized`, you can use it as fellow:
 ```js
 cosnt {
   sync:synchronized

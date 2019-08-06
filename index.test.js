@@ -3,36 +3,33 @@ const {
   sync: synchronized
 } = require("./index.js");
 
-test(
-  "lock",
-  (done) => {
-    jest.setTimeout(60 * 1000)
-    let a = new Mutex();
-    let fn = jest.fn(console.log);
-    const count = 10;
-    async function step(n, ms) {
-      await a.lock();
-      fn(n, `n:${n},ms:${ms}`);
-      if (n == count - 1) {
-        a.emit("done");
-      }
-      setTimeout(a.unlock.bind(a), ms);
+test("lock", (done) => {
+  jest.setTimeout(60 * 1000)
+  let a = new Mutex();
+  let fn = jest.fn(console.log);
+  const count = 10;
+  async function step(n, ms) {
+    let mu = await a.lock();
+    fn(n, `n:${n},ms:${ms}`);
+    if (n == count - 1) {
+      a.emit("done");
     }
-    for (let i = 0; i < count; ++i) {
-      const ms = Math.floor(Math.random() * 10);
-      step(i, ms);
-    }
-
-    a.on('done', () => {
-      let calls = fn.mock.calls;
-      expect(calls.length).toBe(count);
-      expect(calls[0][0]).toBe(0);
-      expect(calls[1][0]).toBe(1);
-      expect(calls[count - 1][0]).toBe(count - 1);
-      done();
-    })
+    setTimeout(a.unlock.bind(a, mu), ms);
   }
-)
+  for (let i = 0; i < count; ++i) {
+    const ms = Math.floor(Math.random() * 10);
+    step(i, ms);
+  }
+
+  a.on('done', () => {
+    let calls = fn.mock.calls;
+    expect(calls.length).toBe(count);
+    expect(calls[0][0]).toBe(0);
+    expect(calls[1][0]).toBe(1);
+    expect(calls[count - 1][0]).toBe(count - 1);
+    done();
+  })
+})
 async function sleep(n) {
   return new Promise(resolve => {
     setTimeout(resolve, n);
@@ -62,9 +59,44 @@ test('synchronized(fun)', async () => {
 
 test('try_lock(mutex)', () => {
   let mutex = new Mutex();
-  expect(mutex.try_lock()).toBe(true);
-  expect(mutex.try_lock()).toBe(false);
-  mutex.unlock();
-  expect(mutex.try_lock()).toBe(true);
-  mutex.unlock();
+  let a = mutex.try_lock();
+  expect(a).not.toBe(null);
+  expect(mutex.try_lock()).toBe(null);
+  mutex.unlock(a);
+  a = mutex.try_lock();
+  expect(a).not.toBe(null);
+  mutex.unlock(a);
 })
+
+test('mutex.lock()', (done) => {
+  let m = new Mutex();
+  const fn = jest.fn();
+  const sT = mu => {
+    let ms = Math.floor(Math.random() * 10);
+    console.log(`after ${ms}ms will firt time call fn.`);
+    setTimeout(
+      () => {
+        fn();
+        m.unlock(mu)
+      },
+      ms
+    );
+  }
+
+  const nthThen = (n, done = false) => s => {
+    console.log(`${n}th run fn.`);
+    expect(fn).toBeCalledTimes(n);
+    fn();
+    m.unlock(s);
+    if (done) {
+      setTimeout(done, 1);
+    }
+  }
+  let a = m.lock();
+  a.then(sT);
+  expect(fn).toBeCalledTimes(0);
+  m.lock().then(nthThen(1));
+  m.lock().then(nthThen(2));
+  m.lock().then(nthThen(3, done));
+  expect.assertions(4);
+});
