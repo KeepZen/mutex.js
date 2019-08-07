@@ -15,7 +15,7 @@ between Js parser thread and other host threads/processes.
 
 So if there are some asynchronous codes, maybe mutex are required. Such as fellow example:
 
-```Js
+```js
 function step(index,ms){
   setTimeout(
     ()=>{
@@ -48,7 +48,7 @@ Mutex like a lock and nobody can unlock the locked lock if do not have a `key`, 
 
 Let's just look at code:
 
-```Js
+```js
 cosnt {Mutex}= require('@keepzen/mutex.Js');
 const m = new Mutex();
 
@@ -92,7 +92,7 @@ After you done your work, you must unlock the `mutex` with the `key` which get f
 ## `sync()`
 
 `sync` is just like Java keyword `synchronized`, you can use it as fellow:
-```Js
+```js
 cosnt {
   sync:synchronized
 }= require('@keepzen/mutex.Js');
