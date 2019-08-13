@@ -1,6 +1,6 @@
 {
   "name": "@keepzen/mutex.js",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "mutext lock for JS",
   "main": "index.js",
   "scripts": {
