@@ -1,5 +1,3 @@
-For Version 0.2.0
-
 # The origin
 We are told: Js is a single process single thread program frame, so programing
 with Js we do not need mutex. But it is not true.
@@ -44,12 +42,12 @@ Mutex can help us.
 
 `lock()` return a `Promsie<Symbol>`, the symbol is the `key` use in `unlock(key)`.
 
-Mutex like a lock and nobody can unlock the locked lock if do not have a `key`, at least for `@keepzen/mutex.Js` this is always true.
+Mutex like a lock and nobody can unlock the locked lock if do not have a `key`, at least for `@keepzen/mutex.js` this is always true.
 
 Let's just look at code:
 
 ```js
-cosnt {Mutex}= require('@keepzen/mutex.Js');
+cosnt {Mutex}= require('@keepzen/mutex.js');
 const m = new Mutex();
 
 //change step to `async`
@@ -84,18 +82,18 @@ now you can use `mutext.try_lock()` to do that.
 
 If `try_lock` return `null` implicit the mutex have be locked by other.
 
-If do not have the `key`, nobody can unlock the mutex, so from version 0.2.0 you do not need to care unintended `unlock`.
+If do not have the `key`, nobody can unlock the mutex, so you do not need to care unintended `unlock`.
 
 ## `unlock(key)`
 After you done your work, you must unlock the `mutex` with the `key` which get from the `lock` or `try_lock`.
 
 ## `sync()`
 
-`sync` is just like Java keyword `synchronized`, you can use it as fellow:
+`sync` just like Java keyword `synchronized`, you can use it as fellow:
 ```js
 cosnt {
   sync:synchronized
-}= require('@keepzen/mutex.Js');
+}= require('@keepzen/mutex.js');
 
 //In future you can use `synchronized` as decorate
 //@synconized
