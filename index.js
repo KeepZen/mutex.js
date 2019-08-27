@@ -8,9 +8,7 @@ class Mutex extends Event {
     if (this._waitToUnlockMutex) {
       return null;
     } else {
-      const mutex = Symbol();
-      this._waitToUnlockMutex = mutex;
-      return mutex;
+      return this._waitToUnlockMutex = Symbol();
     }
   }
   unlock(mutex) {
@@ -27,8 +25,8 @@ class Mutex extends Event {
     if (mutex != null) {
       return mutex;
     } else {
-      let waitToUnlock, thisMutex = Symbol();
-      [waitToUnlock, this._waitToUnlockMutex] = [this._waitToUnlockMutex, thisMutex];
+      const waitToUnlock = this._waitToUnlockMutex;
+      const thisMutex = this._waitToUnlockMutex = Symbol();
       return new Promise(resolve => {
         this.once(waitToUnlock, () => resolve(thisMutex));
       });
@@ -38,14 +36,16 @@ class Mutex extends Event {
 
 function synchronized(fun) {
   const locker = new Mutex();
-  return async (...args) => {
-    const mu = await locker.lock();
-    try {
-      return await fun(...args);
-    } finally {
-      locker.unlock(mu);
-    }
-  }
+  const args = new Array(fun.length).fill('x').map((x, i) => x + i).join(",")
+  const code = `(async function ${fun.name}_sync( ${args} ){
+     const key=await locker.lock();
+     try{
+       return await fun(...arguments);
+     }finally{
+       locker.unlock(key);
+     }
+  })`
+  return eval(code);
 }
 module.exports = {
   Mutex,

@@ -1,9 +1,12 @@
+![npm](https://img.shields.io/npm/v/@keepzen/mutex.js)
+![npm](https://img.shields.io/npm/dm/@keepzen/mutex.js)
+![npm](https://img.shields.io/npm/dt/@keepzen/mutex.js)
 # The origin
 We are told: Js is a single process single thread program frame, so programing
 with Js we do not need mutex. But it is not true.
 
 Js run in a single process single thread context, that is true, but not the
-frame. Js run in a host context, such as a browser or a node.Js process.
+frame. Js run in a host context, such as a browser or a node.js process.
 The host is multi threads, and some even are multi processes.
 We say Js is a single thread, it just mean Js parser run in a thread of the
 host processes.
@@ -11,31 +14,7 @@ host processes.
 When Js have some asynchronous codes, it mean there are some IPC
 between Js parser thread and other host threads/processes.
 
-So if there are some asynchronous codes, maybe mutex are required. Such as fellow example:
-
-```js
-function step(index,ms){
-  setTimeout(
-    ()=>{
-      console.log(`index:${index}`);
-    },
-    ms
-  );
-}
-for(let i=0;i<1000;++i){
-  let ms = Math.floor(Math.random()*1000);
-  step(i,ms);
-}
-```
-If we want the console output like that:
-
-```txt
-index:0
-index:1
-index:2
-....
-```
-Mutex can help us.
+So if there are some asynchronous codes, maybe mutex are required.
 
 # API
 ## `mutex.lock()`
@@ -50,7 +29,6 @@ Let's just look at code:
 cosnt {Mutex}= require('@keepzen/mutex.js');
 const m = new Mutex();
 
-//change step to `async`
 async function step(index,ms) {
   const key=await m.lock();// first lock the mutex
   setTimeout(
@@ -75,14 +53,12 @@ for(let i=0;i<1000;++i){
 Return a symbol or null.
 
 For a locked `mutex`, if you lock it again, you code will be blocked.
-Sometime maybe you just want to have a try but if fail do not want be blocked,
-now you can use `mutext.try_lock()` to do that.
+Sometime maybe you just want to have a try but do not want be blocked if fail,
+`mutext.try_lock()` is for this.
 
-`try_lock` return a symbol as the key if the try success. After you done your work, you should  unlock the `mutex` with the key, as `mutext.unlock(key)`.
+`try_lock` return a symbol as the key if success. After you done your work, you should unlock the `mutex` with this key, such as `mutext.unlock(key)`.
 
 If `try_lock` return `null` implicit the mutex have be locked by other.
-
-If do not have the `key`, nobody can unlock the mutex, so you do not need to care unintended `unlock`.
 
 ## `unlock(key)`
 After you done your work, you must unlock the `mutex` with the `key` which get from the `lock` or `try_lock`.
